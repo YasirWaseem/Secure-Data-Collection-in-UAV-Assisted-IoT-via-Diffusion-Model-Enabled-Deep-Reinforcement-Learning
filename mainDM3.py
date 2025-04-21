@@ -146,7 +146,7 @@ def main(args=get_args()):
     for i_episode in range(6000):
         # print("-----------------------------------------------------------------------------")
         state = env.reset()
-        state = np.array(state, dtype=np.float32, copy=False)
+        state = np.array(state, dtype=np.float32)
         epsilon = end_epsilon + (start_epsilon - end_epsilon) * \
                        math.exp(-1. * i_episode / 30)
 
@@ -168,7 +168,7 @@ def main(args=get_args()):
             else:
                 action = policy.select_action(state,i_episode)
             next_state, reward,done, _ = env.step(action)
-            next_state = np.array(next_state, dtype=np.float32, copy=False)
+            next_state = np.array(next_state, dtype=np.float32)
             Reward += reward
 
             t += 1
