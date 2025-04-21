@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 from tensorboardX import SummaryWriter
 
 from diffusion import Diffusion
-from model import MLP, DoubleCritic
+from model import TransformerDenoiser, DoubleCritic
 from policy import DiffusionOPT
 import seaborn as sns
 
@@ -77,10 +77,14 @@ def main(args=get_args()):
     args.exploration_noise = args.exploration_noise * args.max_action
 
     # create actor
-    actor_net = MLP(
-        state_dim=args.state_shape,
-        action_dim=args.action_shape
-    )
+    actor_net = TransformerDenoiser(
+    state_dim=args.state_shape,
+    action_dim=args.action_shape,
+    hidden_dim=128,  # tweak as needed
+    n_heads=4,
+    n_layers=2
+)
+
     # Actor is a Diffusion model
     actor = Diffusion(
         state_dim=args.state_shape,
