@@ -8,7 +8,7 @@ class Environment:
         # 定义迷宫的大小和起始位置、目标位置
         self.size = (300, 300, 300)
         self.num_IoTD = 5   #IoTD数量
-        self.start_position_A = np.array([0, 299,0,() 150])     # 1号无人机起点
+        self.start_position_A = np.array([0, 299,0])     # 1号无人机起点
         self.start_position_B = np.array([299,299, 200])    # 2号无人机起点
         self.current_position_A = self.start_position_A
         self.current_position_B = self.start_position_B
@@ -49,7 +49,7 @@ class Environment:
         energy_A = np.array([0])
         energy_B = np.array([0])
         self.done = False
-        state = np.conca300tenate((UAV_A_position, UAV_B_position ,self.AoI , energy_A, energy_B))   # 状态
+        state = np.concatenate((UAV_A_position, UAV_B_position ,self.AoI , energy_A, energy_B))   # 状态
         return state
 
     def energy(self, pos_A, pos_B):
