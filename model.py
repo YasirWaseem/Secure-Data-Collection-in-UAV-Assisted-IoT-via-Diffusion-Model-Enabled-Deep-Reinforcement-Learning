@@ -58,6 +58,30 @@ class MLP(nn.Module):
         return deepcopy(np.hstack([torch.tensor(v).flatten() for v in
                                    self.parameters()]))
 
+class TransformerDenoiser(nn.Module):
+    def __init__(self, state_dim, action_dim, hidden_dim=128, n_heads=4, n_layers=2):
+        super().__init__()
+        self.action_embed = nn.Linear(action_dim, hidden_dim)
+        self.state_embed = nn.Linear(state_dim, hidden_dim)
+        self.time_embed = nn.Linear(1, hidden_dim)
+
+        encoder_layer = nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=n_heads)
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=n_layers)
+
+        self.output = nn.Linear(hidden_dim, action_dim)
+
+    def forward(self, x, t, s):
+        t = t.unsqueeze(-1).float()  # [batch, 1]
+        x_embed = self.action_embed(x)
+        s_embed = self.state_embed(s)
+        t_embed = self.time_embed(t)
+
+        # (batch, seq=3, dim)
+        sequence = torch.stack([x_embed, s_embed, t_embed], dim=1)
+        output = self.transformer(sequence)
+
+        return torch.tanh(self.output(output[:, 0, :]))
+
 
 class DoubleCritic(nn.Module):
     def __init__(
