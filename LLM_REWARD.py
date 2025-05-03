@@ -6,7 +6,7 @@ import re
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 
-class GeminiExaminer:
+class LLMExaminer:
     def __init__(self, model_name="mistralai/Mistral-7B-Instruct-v0.1", verbose=False):
         self.verbose = verbose
         self.pipe = self.load_llm(model_name)
