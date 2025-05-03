@@ -15,6 +15,8 @@ from policy import DiffusionOPT
 import seaborn as sns
 
 from UAV import Environment
+from llm_reward import llmExaminer
+
 
 # writer = SummaryWriter("Loss")
 def get_args():
@@ -147,6 +149,7 @@ def main(args=get_args()):
     end_epsilon = 0
     epsilon_steps = 5
     # writer = SummaryWriter("GDMTD3")
+    examiner = llmExaminer(verbose=True)  # Set verbose=False to disable prompt and response printing
     for i_episode in range(6000):
         # print("-----------------------------------------------------------------------------")
         state = env.reset()
@@ -171,9 +174,18 @@ def main(args=get_args()):
                     action[n] = random.uniform(-1,1)
             else:
                 action = policy.select_action(state,i_episode)
-            next_state, reward,done, _ = env.step(action)
-            next_state = np.array(next_state, dtype=np.float32)
+            next_state, base_reward, done, _ = env.step(action)
+
+                # Evaluate using LLM
+            llm_score, llm_comment = examiner.evaluate(state, action, base_reward)
+            reward = 0.9 * base_reward + 0.1 * llm_score
+                
+            # Convert next_state
+            next_state = np.array(next_state, dtype=np.float32, copy=False)
+                
+            # Accumulate total reward
             Reward += reward
+
 
             t += 1
             # adding in memory
