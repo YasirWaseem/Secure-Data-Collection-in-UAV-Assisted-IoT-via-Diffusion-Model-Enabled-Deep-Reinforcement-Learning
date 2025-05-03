@@ -153,7 +153,7 @@ def main(args=get_args()):
     for i_episode in range(6000):
         # print("-----------------------------------------------------------------------------")
         state = env.reset()
-        state = np.array(state, dtype=np.float32)
+        state = np.asarray(state, dtype=np.float32)
         epsilon = end_epsilon + (start_epsilon - end_epsilon) * \
                        math.exp(-1. * i_episode / 30)
 
@@ -181,7 +181,7 @@ def main(args=get_args()):
             reward = 0.9 * base_reward + 0.1 * llm_score
                 
             # Convert next_state
-            next_state = np.array(next_state, dtype=np.float32, copy=False)
+            next_state = np.asarray(next_state, dtype=np.float32)
                 
             # Accumulate total reward
             Reward += reward
