@@ -1,25 +1,20 @@
-#install this first
-#pip install transformers accelerate torch bitsandbytes
+# Install these packages if you haven't:
+# pip install transformers torch accelerate
 
 import numpy as np
 import re
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from transformers import T5Tokenizer, T5ForConditionalGeneration, pipeline
 
 
 class llmExaminer:
-    def __init__(self, model_name="mistralai/Mistral-7B-Instruct-v0.1", verbose=False):
+    def __init__(self, model_name="google/flan-t5-large", verbose=False):
         self.verbose = verbose
         self.pipe = self.load_llm(model_name)
 
     def load_llm(self, model_name):
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            device_map="auto",
-            torch_dtype="auto",
-            load_in_4bit=True  # Uses bitsandbytes for efficient memory use
-        )
-        pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
+        tokenizer = T5Tokenizer.from_pretrained(model_name)
+        model = T5ForConditionalGeneration.from_pretrained(model_name, device_map="auto", torch_dtype="auto")
+        pipe = pipeline("text2text-generation", model=model, tokenizer=tokenizer)
         return pipe
 
     def evaluate(self, state, action, base_reward):
@@ -42,11 +37,7 @@ class llmExaminer:
         aoi_target = aoi[target_iotd]
 
         prompt = f"""
-You are a UAV mission examiner evaluating decisions based on:
-1. Security of communication (safe distances).
-2. AoI (Age of Information) — prioritize high AoI devices.
-3. Energy consumption — prefer low energy use.
-4. Decision correctness — choosing the right IoTD target.
+Evaluate the following UAV mission decision with a score from 0 to 1 and a short comment.
 
 State:
 - UAV A position: {uav_a}
@@ -62,9 +53,6 @@ Action taken:
 
 Base reward from environment: {base_reward}
 
-Evaluate this decision. Provide:
-- A score from 0 to 1.
-- A short comment justifying the score.
 Respond in the format:
 Score: <value>
 Comment: <your reasoning>
@@ -78,3 +66,18 @@ Comment: <your reasoning>
         score = float(score_match.group(1)) if score_match else 0.0
         comment = comment_match.group(1).strip() if comment_match else "No comment found."
         return score, comment
+
+
+# Example usage:
+if __name__ == "__main__":
+    examiner = llmExaminer(verbose=True)
+
+    # Dummy state and action vectors
+    state = [1, 1, 1, 2, 2, 2, 0.3, 0.4, 0.5, 0.2, 0.6, 10, 15]
+    action = [0, 1, 1, 0, 0, 0, 1, 0, 0]  # Last 5 for IoTD one-hot target
+    base_reward = 0.65
+
+    score, comment = examiner.evaluate(state, action, base_reward)
+    print("\nFinal Evaluation:")
+    print(f"Score: {score}")
+    print(f"Comment: {comment}")
