@@ -178,10 +178,10 @@ def main(args=get_args()):
             next_state, base_reward, done, _ = env.step(action)
 
                 # Evaluate using LLM
-                if t % 10 == 0:
-                    llm_score, llm_comment = examiner.evaluate(state, action, base_reward)
-                else:
-                    llm_score = 0
+            if t % 10 == 0:
+                llm_score, llm_comment = examiner.evaluate(state, action, base_reward)
+            else:
+                llm_score = 0
 
             reward = 0.9 * base_reward + 0.1 * llm_score
                 
