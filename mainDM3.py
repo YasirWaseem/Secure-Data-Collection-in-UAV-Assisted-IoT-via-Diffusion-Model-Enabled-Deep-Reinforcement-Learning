@@ -149,6 +149,7 @@ def main(args=get_args()):
     end_epsilon = 0
     epsilon_steps = 5
     # writer = SummaryWriter("GDMTD3")
+    max_episode_steps = 150
     examiner = llmExaminer(verbose=True)  # Set verbose=False to disable prompt and response printing
     for i_episode in range(6000):
         # print("-----------------------------------------------------------------------------")
@@ -167,7 +168,7 @@ def main(args=get_args()):
         done = False
         t = 0
 
-        while not done:
+        while not done and t < max_episode_steps:
             if random.random() < epsilon:
                 action = np.zeros(args.action_shape)
                 for n in range(args.action_shape):
@@ -177,7 +178,11 @@ def main(args=get_args()):
             next_state, base_reward, done, _ = env.step(action)
 
                 # Evaluate using LLM
-            llm_score, llm_comment = examiner.evaluate(state, action, base_reward)
+                if t % 10 == 0:
+                    llm_score, llm_comment = examiner.evaluate(state, action, base_reward)
+                else:
+                    llm_score = 0
+
             reward = 0.9 * base_reward + 0.1 * llm_score
                 
             # Convert next_state
